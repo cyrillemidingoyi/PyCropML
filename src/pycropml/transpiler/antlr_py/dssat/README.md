@@ -14,12 +14,12 @@ For that, we defined some tags (opened and closed) that will be introduced in th
                              
 |Tags  |Parts of source file|
 |-----|--------|
-|!%%ModelUnit_Start%% / !%%ModelUnit_End%% | ModeUnit     |
-|!%%Initialization_Start%% / !%%Initialization_End%%  | Initialization part      |
-|!%%Algorithm_RateCalculation_Start%% / !%%Algorithm_RateCalculation_End%% | Rate Calculation part
-|!%%Algorithm_StateCalculation_Start%% / !%%Algorithm_StateCalculation_End%% | Sate Calculation part 
-|!%%Algorithm_Part_Start%% / !%%Algorithm_Part_End%%| Algorithm part  
-|!%%Ignore_Start%% / !%%Ignore_End%%| Ignored Statement
+|!%%CyML Model Begin%% / !%%CyML Model End%% | Model    |
+|!%%CyML Init Begin%% / !%%CyML Init End%%  | Initialization part      |
+|!%%CyML Rate Begin%% / !%%CyML Rate End%% | Rate Calculation part
+|!%%CyML State Begin%% / !%%CyML State End%% | State Calculation part 
+|!%%CyML Compute Begin%% / !%%CyML Compute End%%| Algorithm part  
+|!%%CyML Ignore Begin%% / !%%CyML Ignore End%%| Ignored Statement
 
 For the not required subroutines, a tag "!%%NotRequired%%" is placed before these subroutines
 
