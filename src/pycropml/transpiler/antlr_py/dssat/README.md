@@ -1,7 +1,7 @@
 
 <u> **From crop DSSAT modeling platform to Crop2ML framework** </u>
 
-DSST modelers provide an autonomous crop model component.
+DSSAT modelers provide an autonomous crop model component.
 It includes the CMakeLists file that contains the source files.
 
 For the transformation, we need to identify:
