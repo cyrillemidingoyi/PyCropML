@@ -169,7 +169,7 @@ class CsharpGenerator(CodeGenerator,CsharpRules):
             self.write("0d")
 
     def visit_array(self, node):
-        print("ppap",node.y)
+        #print("ppap",node.y)
         if hasattr(node, "elts"):
             self.write("new %s[ "%self.types[node.pseudo_type[1]]) 
             self.visit(node.elts)
@@ -352,13 +352,14 @@ class CsharpGenerator(CodeGenerator,CsharpRules):
         return arg'''
 
     def internal_declaration(self, node):
-        statements  = node.block
+        statements = node.block
         if isinstance(statements, list):
-            intern_decl=statements[0].decl if statements[0].type=="declaration" else None
+            intern_decl = statements[0].decl if statements[0].type == "declaration" else None
             for stmt in statements[1:]:
-                if stmt.type=="declaration":
-                    intern_decl=intern_decl+stmt.decl
-        else: intern_decl=statements.decl if statements.type=="declaration" else None
+                if stmt.type == "declaration":
+                    intern_decl = (intern_decl if intern_decl else []) + stmt.decl
+        else:
+            intern_decl = statements.decl if statements.type == "declaration" else None
         return intern_decl
     
     def add_features(self, node):
@@ -574,8 +575,8 @@ class CsharpGenerator(CodeGenerator,CsharpRules):
                     self.write("List<%s> %s = new List<%s>();"%(self.types[n.pseudo_type[1]],n.name, self.types[n.pseudo_type[1]]))
                 if n.type=="array":
                     self.write(f"{self.types[n.pseudo_type[1]]}[]")
-                    self.write(f" {n.name} ;") if n.dim ==0 else self.write(f" {n.name} = ")
-                    if n.elts:
+                    self.write(f" {n.name} ;") if "dim" not in dir(n) or n.dim ==0 else self.write(f" {n.name} = ")
+                    if "elts" in dir(n) and n.elts:
                         self.write(f" new {self.types[n.pseudo_type[1]]} ")
                         for j in n.elts:
                             self.write("[")
@@ -884,7 +885,7 @@ class CsharpTrans(CodeGenerator,CsharpRules):
                     if category+ex.name not in varnames:
                         variables.append(ex)
                         varnames.append(category+ex.name) 
-        print(varnames)
+        #print(varnames)
         st = []
         for var in variables:
             if "variablecategory" in dir(var):
