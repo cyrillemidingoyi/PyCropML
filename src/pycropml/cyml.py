@@ -5,6 +5,7 @@ Created on Tue Mar 19 22:59:23 2019
 @author: midingoy
 """
 import os
+from os.path import isdir
 from path import Path
 import pycropml
 from pycropml.transpiler.main import Main
@@ -23,21 +24,54 @@ from pycropml.transpiler.generators.javaGenerator import to_struct_java
 from pycropml.topology import Topology
 from pycropml.code2nbk import Model2Nb
 from pycropml.transpiler.generators.pythonGenerator import PythonSimulation
-from pycropml.transpiler.generators.siriusGenerator import to_struct_sirius,to_wrapper_sirius
-from pycropml.transpiler.generators.sirius2Generator import to_struct_sirius2,to_wrapper_sirius2
+from pycropml.transpiler.generators.siriusGenerator import to_struct_sirius, to_wrapper_sirius
+from pycropml.transpiler.generators.sirius2Generator import to_struct_sirius2, to_wrapper_sirius2
 from pycropml.transpiler.generators.recordGenerator import Crop2ML_Vpz
-from pycropml.transpiler.generators.cppGenerator import to_struct_cpp
-import pycropml.transpiler.antlr_py 
+#from pycropml.transpiler.generators.cppGenerator import to_struct_cpp
+import pycropml.transpiler.antlr_py
 
+NAMES = {
+    'r': 'r',
+    'cs': 'csharp',
+    'cpp': 'cpp',
+    "cpp2": "cpp2",
+    'py': 'python',
+    'f90': 'fortran',
+    'java': 'java',
+    'simplace': 'simplace',
+    'sirius': 'sirius',
+    "openalea": "openalea",
+    "apsim": "apsim",
+    "record": "record",
+    "dssat": "dssat",
+    "bioma": "bioma",
+    "stics": "stics",
+    "sirius2": "sirius2"
+}
 
-NAMES = {'r':'r','cs':'csharp','cpp':'cpp', 'py':'python', 'f90':'fortran', 'java':'java', 'simplace':'simplace', 'sirius':'sirius', "openalea":"openalea","apsim":"apsim", "record":"record", "dssat":"dssat","bioma":"bioma", "stics":"stics", "sirius2":"sirius2"}
-ext = {'r':'r','cs':'cs','cpp':'cpp', 'py':'py', 'f90':'f90', 'java':'java', 'simplace':'java', 'sirius':'cs','bioma':'cs', "openalea":"py", "apsim":"cs", "record":"cpp", "dssat":"f90", "stics":"f90", "sirius2":'cs'}
+ext = {'r': 'r',
+       'cs': 'cs',
+       'cpp': 'cpp',
+       "cpp2": "cpp",
+       'py': 'py',
+       'f90': 'f90',
+       'java': 'java',
+       'simplace': 'java',
+       'sirius': 'cs',
+       'bioma': 'cs',
+       "openalea": "py",
+       "apsim": "cs",
+       "record": "cpp",
+       "dssat": "f90",
+       "stics": "f90",
+       "sirius2": 'cs'
+       }
 
 cymltx_languages = ['dssat', "simplace", "bioma", "openalea", "f90", "stics", "py"]
 langs = ["cs", "cpp", "java", "f90", "r", "py"]
 
-domain_class = ["cs", "java", 'sirius','cpp', "bioma", "sirius2"]
-wrapper=["cs", "sirius", "bioma", "sirius2"]
+domain_class = ["cs", "java", "sirius", "cpp", "cpp2", "bioma", "sirius2", "apsim"]
+wrapper=["cs", "sirius", "bioma", "sirius2", "apsim"]
 platform = ["simplace","sirius","openalea","apsim","bioma","record","dssat", "stics", "sirius2"]
 
 def transpile_file(source, language):
@@ -72,15 +106,15 @@ def transpile_package(package, language):
     dir_doc = Path(os.path.join(pkg, 'doc'))
 
     # Generate packages if the directories does not exists.
-    if not output.isdir():
+    if not isdir(output):
         output.mkdir()
-    if not dir_test.isdir():
+    if not isdir(dir_test):
         dir_test.mkdir()
-    if not dir_doc.isdir():
+    if not isdir(dir_doc):
         dir_doc.mkdir()
-        
+
     dir_images = Path(os.path.join(dir_doc, 'images'))
-    if not dir_images.isdir():
+    if not isdir(dir_images):
         dir_images.mkdir()
 
     m2p = render_cyml.Model2Package(models, dir=output)
@@ -88,15 +122,15 @@ def transpile_package(package, language):
     tg_rep1 = Path(os.path.join(output, language))  # target language models  directory in output
     dir_test_lang = Path(os.path.join(dir_test, language))
     
-    if not tg_rep1.isdir():
+    if not isdir(tg_rep1):
         tg_rep1.mkdir()
-    
-    namep_ = namep.replace("-", "_")    
+
+    namep_ = namep.replace("-", "_")
     tg_rep = Path(os.path.join(tg_rep1, namep_))
-    if not tg_rep.isdir():
+    if not isdir(tg_rep):
         tg_rep.mkdir()
 
-    if not dir_test_lang.isdir():  #Create if it doesn't exist
+    if not isdir(dir_test_lang):  #Create if it doesn't exist
         dir_test_lang.mkdir()
 
     m2p.write_tests()
@@ -109,9 +143,9 @@ def transpile_package(package, language):
     mc_name = T.model.name
 
     # Record VPZ
-    #if language == "record":
-        #vpz = Crop2ML_Vpz(T)
-        #print(vpz.create())
+    # if language == "record":
+    # vpz = Crop2ML_Vpz(T)
+    # print(vpz.create())
 
     # domain class
     if language in domain_class:
@@ -133,28 +167,29 @@ def transpile_package(package, language):
                 test.parse()
                 test.to_ast(source)
                 code = test.to_source()
-                filename = Path(os.path.join(tg_rep, f"{nameconvention.signature(model, ext[language])}.{ext[language]}"))
+                filename = Path(
+                    os.path.join(tg_rep, f"{nameconvention.signature(model, ext[language])}.{ext[language]}"))
                 with open(filename, "wb") as tg_file:
                     tg_file.write(code.encode('utf-8'))
                 if language in langs:
                     Model2Nb(model, code, name, dir_test_lang).generate_nb(language, tg_rep, namep, mc_name)
-                    #code2nbk.generate_notebook(code, name, dir_nb_lang)
+                    # code2nbk.generate_notebook(code, name, dir_nb_lang)
 
     # Create Cyml Composite model
     T_pyx = T.algo2cyml(dir_images)
     fileT = Path(os.path.join(cyml_rep, f"{mc_name}Component.pyx"))
     with open(fileT, "wb") as tg_file:
-        tg_file.write(T_pyx.encode('utf-8'))  
+        tg_file.write(T_pyx.encode('utf-8'))
 
     filename = Path(os.path.join(tg_rep, f"{mc_name}Component.{ext[language]}"))
     code = T.compotranslate(language).encode('utf-8')
     if code:
         with open(filename, "wb") as tg_file:
-            tg_file.write(code)   
+            tg_file.write(code)
 
     # create computing algorithm
     if language == "py":
-        simulation = PythonSimulation(T.model)
+        simulation = PythonSimulation(T.model, package_name=namep)
         simulation.generate()
         code = ''.join(simulation.result)
         filename = Path(os.path.join(tg_rep, "simulation.py"))
@@ -163,10 +198,13 @@ def transpile_package(package, language):
             tg_file.write(code.encode("utf-8"))
         with open(initfile, "wb") as tg_file:
             tg_file.write("".encode("utf-8"))
-        setup = PythonSimulation(T.model)
-        setup.generate_setup()
+
+        setup = PythonSimulation(T.model, package_name=namep)
+        #setup.generate_setup()
+        setup.generate_pyproject()
         code = ''.join(setup.result)
-        setupfile = Path(os.path.join(tg_rep1, "setup.py"))
+        #setupfile = Path(os.path.join(tg_rep1, "setup.py"))
+        setupfile = Path(os.path.join(tg_rep1, "pyproject.toml"))
         with open(setupfile, "wb") as tg_file:
             tg_file.write(code.encode("utf-8"))
 
@@ -187,7 +225,8 @@ def transpile_component(component, package, language):
     """
 
     translator = {
-        format: getattr(getattr(getattr(pycropml.transpiler.antlr_py, NAMES[format].lower()), 'run'), f'run_{NAMES[format]}')
+        format: getattr(getattr(getattr(pycropml.transpiler.antlr_py, NAMES[format].lower()), 'run'),
+                        f'run_{NAMES[format]}')
         for format in cymltx_languages
     }
     print('translator :', translator)

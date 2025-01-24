@@ -466,7 +466,7 @@ class AstTransformer():
         }
 
     def visit_boolnode(self, node, location):
-        return {'type': 'bool', 'value': node.value, 'pseudo_type': 'bool'}
+        return {'type': 'bool', 'value': str(node.value).lower(), 'pseudo_type': 'bool'}
 
     def visit_indexnode(self, node, base, index, location):
         value_node = self.visit_node(base)
@@ -1911,10 +1911,10 @@ class AstTransformer():
         else:
             return t
 
+
 # retrieve from pseudo-python
 def transform_to_syntax_tree(tree):
-    '''Generate a Node class from the tree in dict format    
-    '''
+    """Generate a Node class from the tree in dict format"""
     if isinstance(tree, dict) and 'type' in tree:
         return Node(tree['type'], **{k: transform_to_syntax_tree(v) for k, v in tree.items() if k != 'type'})
     elif isinstance(tree, dict):
