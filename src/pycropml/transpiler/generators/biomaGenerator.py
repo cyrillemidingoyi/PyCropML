@@ -778,7 +778,7 @@ def to_struct_bioma(models, rep, name):
         generator.result = []
         generator.generate(states, "%s%s"%(name,catvar), name)
         z= ''.join(generator.result)
-        filename = rep / "%s%s.cs"%(name, catvar)
+        filename = rep / ("%s%s.cs" % (name, catvar))
         with filename.open("wb") as tg_file:
             tg_file.write(z.encode('utf-8'))
 
@@ -796,7 +796,7 @@ def to_struct_bioma(models, rep, name):
         generator.result = []
         generator.generateVarInfo(states, "%s%s"%(name,catvar), name)
         z= ''.join(generator.result)
-        filename = rep / "%s%sVarInfo.cs"%(name, catvar)
+        filename = rep / ("%s%sVarInfo.cs" % (name, catvar))
         with filename.open("wb") as tg_file:
             tg_file.write(z.encode('utf-8'))
 
@@ -1031,12 +1031,15 @@ using CRA.AgroManagement;
         self.newline(extra=1)
 
     def staticVarInfo(self, node):
-        for pa in self.node_param: 	
+        for pa in self.node_param:
+            mo = self.get_mo(pa.name)
+            if not mo:
+                continue
             self.write("public static VarInfo %sVarInfo"%pa.name)
             self.open(node)
-            self.write("get { return %s%s.Strategies.%s.%sVarInfo;} "%(self.customer,self.model.name,self.get_mo(pa.name)[0],pa.name))
-            self.close(node) 
-            self.newline(extra=1) 
+            self.write("get { return %s%s.Strategies.%s.%sVarInfo;} "%(self.customer,self.model.name,mo[0]["modu"],pa.name))
+            self.close(node)
+            self.newline(extra=1)
 
     def TestPostConditions(self, node):
         self.write("public string TestPostConditions(%s%s.DomainClass.%sState s,%s%s.DomainClass.%sState s1,%s%s.DomainClass.%sRate r,%s%s.DomainClass.%sAuxiliary a,%s%s.DomainClass.%sExogenous ex,string callID)"%(self.customer,self.name,self.name,self.customer,self.name,self.name,self.customer,self.name,self.name,self.customer,self.name,self.name,self.customer,self.name,self.name))
@@ -1337,10 +1340,10 @@ def to_wrapper_bioma(models, rep, name, customer = ''):
     generator.model2Node()
     generator.wrapper()
     z= ''.join(generator.result)
-    filename = rep / "%sWrapper.cs"%name
+    filename = rep / ("%sWrapper.cs" % name)
     with filename.open("wb") as tg2_file:
         tg2_file.write(z.encode('utf-8'))
-    filename = rep / "IStrategy%s%s.cs"%(customer,name)
+    filename = rep / ("IStrategy%s%s.cs" % (customer,name))
     generator2 = BiomaCompo(model = models)
     generator2.interfaceStrategy(1)
     z= ''.join(generator2.result)

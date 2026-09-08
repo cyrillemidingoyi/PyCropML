@@ -682,7 +682,8 @@ using CRA.ModelLayer.ParametersManagement;
             elif arg.pseudo_type=="DateTime":
                 self.write(" = new DateTime()")
             elif arg.pseudo_type[0] =="array":
-                self.write(" = new %s[%s]"%(self.types[arg.pseudo_type[1]], arg.elts[0].value if "value" in dir(arg.elts[0]) else arg.elts[0].name))
+                size = arg.elts[0].value if "value" in dir(arg.elts[0]) else arg.elts[0].name
+                self.write(" = new %s[%s]" % (self.types[arg.pseudo_type[1]], size or 0))
             elif arg.pseudo_type == "str":
                 self.write(" = null")
             else: self.write(" = default(%s)"%(self.types[arg.pseudo_type]))
@@ -800,7 +801,7 @@ def to_struct_sirius(models, rep, name):
         generator.result = []
         generator.generate(states, "%s%s"%(name,catvar), name)
         z= ''.join(generator.result)
-        filename = rep / "%s%s.cs"%(name, catvar)
+        filename = rep / ("%s%s.cs" % (name, catvar))
         with filename.open("wb") as tg_file:
             tg_file.write(z.encode('utf-8'))
 
@@ -818,7 +819,7 @@ def to_struct_sirius(models, rep, name):
         generator.result = []
         generator.generateVarInfo(states, "%s%s"%(name,catvar), name)
         z= ''.join(generator.result)
-        filename = rep / "%s%sVarInfo.cs"%(name, catvar)
+        filename = rep / ("%s%sVarInfo.cs" % (name, catvar))
         with filename.open("wb") as tg_file:
             tg_file.write(z.encode('utf-8'))
 
@@ -1053,12 +1054,15 @@ using CRA.AgroManagement;
         self.newline(extra=1)
 
     def staticVarInfo(self, node):
-        for pa in self.node_param: 	
+        for pa in self.node_param:
+            mo = self.get_mo(pa.name)
+            if not mo:
+                continue
             self.write("public static VarInfo %sVarInfo"%pa.name)
             self.open(node)
-            self.write("get { return SiriusQuality%s.Strategies.%s.%sVarInfo;} "%(self.model.name,self.get_mo(pa.name)[0],pa.name))
-            self.close(node) 
-            self.newline(extra=1) 
+            self.write("get { return SiriusQuality%s.Strategies.%s.%sVarInfo;} "%(self.model.name,mo[0]["modu"],pa.name))
+            self.close(node)
+            self.newline(extra=1)
 
     def TestPostConditions(self, node):
         self.write("public string TestPostConditions(SiriusQuality%s.DomainClass.%sState s,SiriusQuality%s.DomainClass.%sState s1,SiriusQuality%s.DomainClass.%sRate r,SiriusQuality%s.DomainClass.%sAuxiliary a,SiriusQuality%s.DomainClass.%sExogenous ex,string callID)"%(self.name,self.name,self.name,self.name,self.name,self.name,self.name,self.name,self.name,self.name))
@@ -1353,10 +1357,10 @@ def to_wrapper_sirius(models, rep, name):
     generator.model2Node()
     generator.wrapper()
     z= ''.join(generator.result)
-    filename = rep / "%sWrapper.cs"%name
+    filename = rep / ("%sWrapper.cs" % name)
     with filename.open("wb") as tg2_file:
         tg2_file.write(z.encode('utf-8'))
-    filename = rep / "IStrategySiriusQuality%s.cs"%name
+    filename = rep / ("IStrategySiriusQuality%s.cs" % name)
     generator2 = SiriusCompo(model = models)
     generator2.interfaceStrategy(1)
     z= ''.join(generator2.result)
